@@ -1,11 +1,20 @@
--- This module serves as the root of the `Brownian` library.
--- Import modules here that should be built as part of the library.
-import mathlib
 import «Brownian».Basic
+import Mathlib.Probability.Independence.Basic
+import Mathlib.Probability.Distributions.Gaussian
 
-def lean : String := "Lean"
+open MeasureTheory ProbabilityTheory NNReal Real
 
-#eval String.append hello (String.append " " lean)
+variable {Ω : Type} [MeasureSpace Ω]
+variable {μ : ℝ} {v : ℝ≥0}
+variable {X : Ω → ℝ} (hX : Measure.map X ℙ = gaussianReal μ v)
+#check X
+
+variable {_ : MeasurableSpace Ω} {μ : Measure Ω}
+
+theorem BrowianExistence {β : ι → Type*}
+    {m : ∀ x, MeasurableSpace (β x)} {f : ∀ i, Ω → β i} (hf_Indep : iIndepFun m f μ) {i j : ι}
+    (hij : i ≠ j) :
+    IndepFun (f i) (f j) μ := sorry
 
 def HHaskell {α : Type} [LinearOrderedField α] (n : ℕ) (k : ℕ) (_ : 2 * k - 1 ≤ 2^n -1) (s : α) : ℤ :=
   let k':= 2 * k + 1
@@ -14,13 +23,6 @@ def HHaskell {α : Type} [LinearOrderedField α] (n : ℕ) (k : ℕ) (_ : 2 * k 
   else if k' * 2^(-n : ℤ) < s && s <= (k' + 1) * 2^(-n : ℤ)
        then -2^((n - 1) / 2)
        else 0
-
-def HHaskell {α : Type} [LinearOrderedField α] (n : ℕ) (k : ℕ) (_ : 2 * k - 1 ≤ 2^n - 1) (s : α) : ℤ :=
-  let k' := 2 * k + 1
-  match true with
-  | (k' - 1) * 2^(-n : ℤ) < s ∧ s <= k'       * 2^(-n : ℤ) =>  2^((n - 1) / 2)
-  | k'       * 2^(-n : ℤ) < s ∧ s <= (k' + 1) * 2^(-n : ℤ) => -2^((n - 1) / 2)
-  | _                                                      => 0
 
 #eval HHaskell 1 1 (by decide) (3/4 : ℚ)
 
