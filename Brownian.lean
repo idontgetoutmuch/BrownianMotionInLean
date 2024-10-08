@@ -11,9 +11,10 @@ variable {X : Ω → ℝ} (hX : Measure.map X ℙ = gaussianReal μ v)
 
 variable {_ : MeasurableSpace Ω} {μ : Measure Ω}
 
-theorem BrowianExistence {β : ι → Type*}
-    {m : ∀ x, MeasurableSpace (β x)} {f : ∀ i, Ω → β i} (hf_Indep : iIndepFun m f μ) {i j : ι}
-    (hij : i ≠ j) :
+theorem BrowianExistence
+    {m : ∀ x, MeasurableSpace ℝ}
+    {f : ∀ i, Ω → ℝ} (hf_Indep : iIndepFun m f μ) (h_Normal : Measure.map (f i) μ = gaussianReal 0 1)
+    {i j : Ω -> ℝ} (hij : i ≠ j) :
     IndepFun (f i) (f j) μ := sorry
 
 def HHaskell {α : Type} [LinearOrderedField α] (n : ℕ) (k : ℕ) (_ : 2 * k - 1 ≤ 2^n -1) (s : α) : ℤ :=
