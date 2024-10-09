@@ -1,0 +1,28 @@
+cabal-version:      3.0
+name:               Brownian
+version:            0.1.0.0
+-- synopsis:
+-- description:
+license:            BSD-3-Clause
+license-file:       LICENSE
+author:             Dominic Steinitz
+maintainer:         dominic@steinitz.org
+-- copyright:
+category:           Math
+build-type:         Simple
+extra-doc-files:    CHANGELOG.md
+-- extra-source-files:
+
+common warnings
+    ghc-options: -Wall
+
+executable Brownian
+    import:           warnings
+    main-is:          Brownian.hs
+    -- other-modules:
+    -- other-extensions:
+    build-depends:    base ^>=4.20.0.0,
+                      containers,
+                      vector
+    hs-source-dirs:   app
+    default-language: GHC2024
