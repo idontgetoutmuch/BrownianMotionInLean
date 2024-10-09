@@ -1,16 +1,3 @@
-{-# LANGUAGE DataKinds           #-}
-{-# LANGUAGE TypeOperators       #-}
-{-# LANGUAGE KindSignatures      #-}
-{-# LANGUAGE TypeFamilies        #-}
-{-# LANGUAGE TypeOperators       #-}
-{-# LANGUAGE Rank2Types          #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE PolyKinds           #-}
-
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE FlexibleContexts #-}
-
-
 import           Data.Bits
 import qualified Data.Map as M
 import           Data.Map ( Map )
@@ -19,9 +6,6 @@ import qualified Data.Set as S
 import           Data.Set ( Set )
 import qualified Data.Vector as V
 import           Data.Vector ( Vector )
-
--- import GHC.TypeLits
--- import Data.Proxy
 
 bigD :: Enum a => Ord a => Fractional a => Int -> Set a
 bigD n = S.fromList [ k / 2^n | k <- [0 .. 2^n] ]
@@ -63,29 +47,3 @@ binarySearch vec x = loop 0 (V.length vec - 1)
       | u <= l    = l
       | otherwise = let e = vec V.! k in if x <= e then loop l k else loop (k+1) u
       where k = l + (u - l) `shiftR` 1
-
--- data Haar (a :: Nat) (b :: Nat) = Haar { unHaar :: Double -> Double }
-
--- haar :: forall n k .
---         (KnownNat n, KnownNat k, (2 * k - 1 <=? 2^n - 1) ~ 'True) =>
---         Haar n (2 * k - 1)
--- haar = Haar g where
---   g t | (k' - 1) * 2 ** (-n') < t && t <= k'       * 2 ** (-n') =  2 ** ((n' - 1) / 2)
---       | k'       * 2 ** (-n') < t && t <= (k' + 1) * 2 ** (-n') = -2 ** ((n' - 1) / 2)
---       | otherwise                                               =  0
---     where
---         n' = fromIntegral (natVal (Proxy :: Proxy n))
---         k' = 2 * (fromIntegral (natVal (Proxy :: Proxy k))) - 1
-
--- data Haar (n :: Nat) (k :: Nat) = Haar { unHaar :: Double -> Double }
-
--- haar :: forall n k .
---         (KnownNat n, KnownNat k, (2 * k - 1 <=? 2^n - 1) ~ 'True) =>
---         Haar n (2 * k - 1)
--- haar = Haar g where
---   g t | (k' - 1) * 2 ** (-n') < t && t <= k'       * 2 ** (-n') =  2 ** ((n' - 1) / 2)
---       | k'       * 2 ** (-n') < t && t <= (k' + 1) * 2 ** (-n') = -2 ** ((n' - 1) / 2)
---       | otherwise                                               =  0
---     where
---         n' = fromIntegral (natVal (Proxy :: Proxy n))
---         k' = 2 * (fromIntegral (natVal (Proxy :: Proxy k))) - 1
