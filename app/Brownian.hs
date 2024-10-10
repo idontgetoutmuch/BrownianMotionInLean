@@ -1,4 +1,7 @@
+module Brownian where
+
 import           Data.Bits
+import           Data.List (unfoldr)
 import qualified Data.Map as M
 import           Data.Map ( Map )
 import           Data.Maybe ( fromJust )
@@ -7,6 +10,7 @@ import qualified Data.Set as S
 import           Data.Set ( Set )
 import qualified Data.Vector as V
 import           Data.Vector ( Vector )
+
 
 bigD :: Enum a => Ord a => Fractional a => Int -> [a]
 bigD n = [ k / 2^n | k <- [0 .. 2^n] ]
@@ -24,15 +28,25 @@ ratIndToNatInd n = M.map head $ invert (M.map return (natIndToRatInd n))
 bigF :: (Ord k, Enum k, Fractional k) =>
         (Int -> t -> k) -> (Int -> t) -> Int -> k -> k
 bigF bigZ ω n t
-  | n == 1 = t * bigZ 1 (ω 1)
+  | n == 0 = t * bigZ 0 (ω 0)
   | t `elem` bigD (n - 1) = 0
-  | t `elem` bigD n = bigZ (fromJust $ M.lookup t (ratIndToNatInd n))  (ω n)
+  | t `elem` bigD n = s n * bigZ (fromJust $ M.lookup t (ratIndToNatInd n))  (ω n)
   | otherwise = linearInterpolation xys t
       where
         xys = map f (bigD n)
         f d | d `elem` bigD (n - 1) = (d, 0)
             | otherwise             = (d, g d)
-        g d = bigZ (fromJust $ M.lookup d (ratIndToNatInd n))  (ω n)
+        g d = s n * bigZ (fromJust $ M.lookup d (ratIndToNatInd n)) (ω n)
+        s n | odd n = recip 2^m
+            | otherwise = (recip 2^m) / (last $ mySqrt 2)
+          where
+            m = (n + 1) `div` 2
+
+mySqrt :: Fractional a => a -> [a]
+mySqrt x = unfoldr f (5, x)
+  where
+    f (0, y) = Nothing
+    f (n, y) = Just ((1 / 2) * (y + x / y), (n - 1, (1 / 2) * (y + x / y)))
 
 linearInterpolation :: Fractional a => Ord a => [(Ratio Integer, a)] -> (a -> a)
 linearInterpolation xzs = f where
