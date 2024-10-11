@@ -2,6 +2,36 @@ import «Brownian».Basic
 import Mathlib.Probability.Independence.Basic
 import Mathlib.Probability.Distributions.Gaussian
 
+-- The dyadic points
+def D {α : Type} [LinearOrderedField α] (n : ℕ) : List α :=
+  List.range (2^n + 1) |>.map (λ k => k / (2^n : α))
+
+-- FIXME: The list should be sorted
+def binarySearch {α : Type} [LinearOrderedField α] [Inhabited α] (vec : List α) (x : α) : Nat :=
+  let rec loop (l u : Nat) : Nat :=
+    if u <= l then l
+     else
+      let k := l + (u - l) / 2
+      if x <= vec.get! k then loop l k else loop (k + 1) u
+  termination_by u - l
+  loop 0 (vec.length - 1)
+
+def testBinarySearch : Nat :=
+  let vec : List ℚ := [1 / 2, 2 / 2, 3 / 2, 4 / 2, 5 / 2, 6 / 2, 7 / 2, 8 / 2, 9 / 2, 10 / 2]
+  let x := 9 / 4
+  binarySearch vec x
+
+#eval testBinarySearch
+
+def linearInterpolation (xzs : List (ℚ × ℚ)) : ℚ → ℚ :=
+  let xs := xzs.map Prod.fst
+  let zs := xzs.map Prod.snd
+  λ t => if t < xs.head! || t > xs.last! then panic! "Cannot interpolate"
+         else let ys := xs.map Rat.cast
+              let i := binarySearch ys t
+              let m := (t - ys.get! (i - 1)) / (ys.get! i - ys.get! (i - 1))
+              m * zs.get! i + (1 - m) * zs.get! (i - 1)
+
 open MeasureTheory ProbabilityTheory NNReal Real
 
 variable {Ω : Type} [MeasureSpace Ω]

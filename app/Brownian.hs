@@ -107,3 +107,13 @@ omegas = [
 
 test :: Int -> Double -> Double
 test n = bigF (const phiInverse) (omegas!!) n
+
+test' :: Int -> [(Double, Double)]
+test' n = map (\t ->  (t, test n t)) [0.00, 0.001 .. 1.00]
+
+bmApprox :: Int -> [(Double, Double)]
+bmApprox n = foldr (\tzs s -> zip (map fst s) (zipWith (+) (map snd tzs) (map snd s))) (head tzss) (tail tzss)
+  where
+    tzss :: [[(Double, Double)]]
+    tzss = (map test' [0 .. n])
+
