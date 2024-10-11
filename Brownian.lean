@@ -6,6 +6,8 @@ import Mathlib.Probability.Distributions.Gaussian
 def D {α : Type} [LinearOrderedField α] (n : ℕ) : List α :=
   List.range (2^n + 1) |>.map (λ k => k / (2^n : α))
 
+#eval ((D 4) : List ℚ)
+
 -- FIXME: The list should be sorted
 def binarySearch {α : Type} [LinearOrderedField α] [Inhabited α] (vec : List α) (x : α) : Nat :=
   let rec loop (l u : Nat) : Nat :=
@@ -23,13 +25,12 @@ def testBinarySearch : Nat :=
 
 #eval testBinarySearch
 
-def linearInterpolation (xzs : List (ℚ × ℚ)) : ℚ → ℚ :=
+def linearInterpolation {α : Type} [LinearOrderedField α] [Inhabited α] (xzs : List (α × α)) : α → α :=
   let xs := xzs.map Prod.fst
   let zs := xzs.map Prod.snd
-  λ t => if t < xs.head! || t > xs.last! then panic! "Cannot interpolate"
-         else let ys := xs.map Rat.cast
-              let i := binarySearch ys t
-              let m := (t - ys.get! (i - 1)) / (ys.get! i - ys.get! (i - 1))
+  λ t => if t < xs.head! || t > xs.getLast! then panic! "Cannot interpolate"
+         else let i := binarySearch xs t
+              let m := (t - xs.get! (i - 1)) / (xs.get! i - xs.get! (i - 1))
               m * zs.get! i + (1 - m) * zs.get! (i - 1)
 
 open MeasureTheory ProbabilityTheory NNReal Real
