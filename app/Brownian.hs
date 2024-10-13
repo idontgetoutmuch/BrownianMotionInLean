@@ -11,6 +11,20 @@ import           Data.Set ( Set )
 import qualified Data.Vector as V
 import           Data.Vector ( Vector )
 
+c [] _ = []
+c xs [] = xs
+c xs@(x:xr) ys@(y:yr)
+  | x == y = c xr yr
+  | x < y =  x : c xr ys
+  | otherwise = c xs yr
+
+unD :: Integral b => RealFrac a => Ord a => Enum a => a -> b
+unD p | p `elem` (bigD 0) = round ((2^0 * p) + 1) `div` 2
+      | otherwise         = g 1
+ where
+   g n = if p `elem` ((bigD n) `c` (bigD (n - 1)))
+         then 2^(n - 1) + round ((2^n * p) + 1) `div` 2
+         else g (n + 1)
 
 bigD :: Enum a => Ord a => Fractional a => Int -> [a]
 bigD n = [ k / 2^n | k <- [0 .. 2^n] ]
@@ -42,8 +56,12 @@ bigF bigZ ω n t
           where
             m = (n + 1) `div` 2
 
+-- To floating point accuracy
+sqrt2 :: Rational
+sqrt2 = 886731088897 % 627013566048
+
 mySqrt :: Fractional a => a -> [a]
-mySqrt x = unfoldr f (5, x)
+mySqrt x = unfoldr f (10, x)
   where
     f (0, y) = Nothing
     f (n, y) = Just ((1 / 2) * (y + x / y), (n - 1, (1 / 2) * (y + x / y)))

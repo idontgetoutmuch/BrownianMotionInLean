@@ -6,7 +6,26 @@ import Mathlib.Probability.Distributions.Gaussian
 def D {α : Type} [LinearOrderedField α] (n : ℕ) : List α :=
   List.range (2^n + 1) |>.map (λ k => k / (2^n : α))
 
+def complement {α : Type} [DecidableEq α] (l1 l2 : List α) : List α :=
+  l1.filter (λ x => if _ : x ∈ l2 then false else true)
+
+def roundDiv2 {α : Type} [LinearOrderedField α] [FloorRing α] (x : α) : Int :=
+  Int.ofNat (Nat.div (Int.toNat (⌊x + 1⌋)) 2)
+
+partial def g {α : Type} [LinearOrderedField α] [FloorRing α] [Ord α] (p : α) (n : Nat) : Int :=
+  if p ∈ (complement (D n) (D (n - 1))) then
+    2^(n - 1) + roundDiv2 (2^n * p)
+  else g p (n + 1)
+
+def unD {α : Type} [LinearOrderedField α] [FloorRing α] [Ord α] (p : α) : Int :=
+  if p ∈ D 0 then
+    roundDiv2 (2^0 * p)
+  else g p 1
+
 #eval ((D 4) : List ℚ)
+#eval (complement ((D 3) : List ℚ) (D 2))
+#eval ((D 0) : List ℚ)
+#eval unD (7/8 : ℚ)
 
 -- FIXME: The list should be sorted
 def binarySearch {α : Type} [LinearOrderedField α] [Inhabited α] (vec : List α) (x : α) : Nat :=
@@ -32,6 +51,17 @@ def linearInterpolation {α : Type} [LinearOrderedField α] [Inhabited α] (xzs 
          else let i := binarySearch xs t
               let m := (t - xs.get! (i - 1)) / (xs.get! i - xs.get! (i - 1))
               m * zs.get! i + (1 - m) * zs.get! (i - 1)
+
+def bigF {k : Type} [LinearOrderedField k]
+         (bigZ : ℚ → k → k) (ω : Int → k) (n : ℕ) (t : k) : k :=
+  if n == 0 then
+    t * bigZ 0 (ω 0)
+  else if t ∈ D (n - 1) then
+    0
+  else 0
+ -- else if t ∈ D n then
+ --   let ratMap := sorry
+
 
 open MeasureTheory ProbabilityTheory NNReal Real
 
