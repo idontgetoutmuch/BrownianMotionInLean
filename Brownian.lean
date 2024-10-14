@@ -9,15 +9,15 @@ def D {α : Type} [LinearOrderedField α] (n : ℕ) : List α :=
 def complement {α : Type} [DecidableEq α] (l1 l2 : List α) : List α :=
   l1.filter (λ x => if _ : x ∈ l2 then false else true)
 
-def roundDiv2 {α : Type} [LinearOrderedField α] [FloorRing α] (x : α) : Int :=
-  Int.ofNat (Nat.div (Int.toNat (⌊x + 1⌋)) 2)
+def roundDiv2 {α : Type} [LinearOrderedField α] [FloorRing α] (x : α) : Nat :=
+  Nat.div (Int.toNat (⌊x + 1⌋)) 2
 
-partial def g {α : Type} [LinearOrderedField α] [FloorRing α] [Ord α] (p : α) (n : Nat) : Int :=
+partial def g {α : Type} [LinearOrderedField α] [FloorRing α] [Ord α] (p : α) (n : Nat) : ℕ :=
   if p ∈ (complement (D n) (D (n - 1))) then
     2^(n - 1) + roundDiv2 (2^n * p)
   else g p (n + 1)
 
-def unD {α : Type} [LinearOrderedField α] [FloorRing α] [Ord α] (p : α) : Int :=
+def unD {α : Type} [LinearOrderedField α] [FloorRing α] [Ord α] (p : α) : ℕ :=
   if p ∈ D 0 then
     roundDiv2 (2^0 * p)
   else g p 1
@@ -26,6 +26,7 @@ def unD {α : Type} [LinearOrderedField α] [FloorRing α] [Ord α] (p : α) : I
 #eval (complement ((D 3) : List ℚ) (D 2))
 #eval ((D 0) : List ℚ)
 #eval unD (7/8 : ℚ)
+#eval unD (0 : ℚ)
 
 -- FIXME: The list should be sorted
 def binarySearch {α : Type} [LinearOrderedField α] [Inhabited α] (vec : List α) (x : α) : Nat :=
@@ -52,18 +53,28 @@ def linearInterpolation {α : Type} [LinearOrderedField α] [Inhabited α] (xzs 
               let m := (t - xs.get! (i - 1)) / (xs.get! i - xs.get! (i - 1))
               m * zs.get! i + (1 - m) * zs.get! (i - 1)
 
-def bigF {k : Type} [LinearOrderedField k]
-         (bigZ : ℚ → k → k) (ω : Int → k) (n : ℕ) (t : k) : k :=
+open MeasureTheory ProbabilityTheory NNReal Real
+
+class HasApproxSqrt2 (k) where sqrt2 : k
+instance               : HasApproxSqrt2 ℚ where sqrt2 := 886731088897 / 627013566048
+noncomputable instance : HasApproxSqrt2 ℝ where sqrt2 := Real.sqrt 2
+
+def s {k : Type} [LinearOrderedField k] [HasApproxSqrt2 k] (n : ℕ) : k :=
+  let m := (n + 1) / 2
+  if n % 2 = 1 then 1 / 2^m / HasApproxSqrt2.sqrt2 else (1 / 2^m) / HasApproxSqrt2.sqrt2
+
+def F {k : Type} [LinearOrderedField k] [FloorRing k] [Inhabited k]
+         (Z : ℕ → k → k) (ω : ℕ → k) (n : ℕ) (t : k) : k :=
   if n == 0 then
-    t * bigZ 0 (ω 0)
+    t * Z 0 (ω 0)
   else if t ∈ D (n - 1) then
     0
-  else 0
- -- else if t ∈ D n then
- --   let ratMap := sorry
-
-
-open MeasureTheory ProbabilityTheory NNReal Real
+  else if t ∈ D n then
+    Z (unD t) (ω (unD t))
+  else let xys := D n |>.map (λ d => if d ∈ D (n - 1) then (d, 0) else (d, g d))
+       linearInterpolation xys t
+  where g (d : k) := let s := if n % 2 = 1 then (1 / 2^(n + 1) / sqrt2) else (1 / 2^(n + 1))
+                     s * Z (unD d) (ω n)
 
 variable {Ω : Type} [MeasureSpace Ω]
 variable {μ : ℝ} {v : ℝ≥0}
