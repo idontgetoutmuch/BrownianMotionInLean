@@ -1,6 +1,8 @@
+import Mathlib
 import «Brownian».Basic
 import Mathlib.Probability.Independence.Basic
 import Mathlib.Probability.Distributions.Gaussian
+import Mathlib.MeasureTheory.Constructions.UnitInterval
 
 -- The dyadic points
 def D {α : Type} [LinearOrderedField α] (n : ℕ) : List α :=
@@ -59,11 +61,7 @@ class HasApproxSqrt2 (k) where sqrt2 : k
 instance               : HasApproxSqrt2 ℚ where sqrt2 := 886731088897 / 627013566048
 noncomputable instance : HasApproxSqrt2 ℝ where sqrt2 := Real.sqrt 2
 
-def s {k : Type} [LinearOrderedField k] [HasApproxSqrt2 k] (n : ℕ) : k :=
-  let m := (n + 1) / 2
-  if n % 2 = 1 then 1 / 2^m / HasApproxSqrt2.sqrt2 else (1 / 2^m) / HasApproxSqrt2.sqrt2
-
-def F {k : Type} [LinearOrderedField k] [FloorRing k] [Inhabited k]
+def F {k : Type} [LinearOrderedField k] [FloorRing k] [Inhabited k] [HasApproxSqrt2 k]
          (Z : ℕ → k → k) (ω : ℕ → k) (n : ℕ) (t : k) : k :=
   if n == 0 then
     t * Z 0 (ω 0)
@@ -73,18 +71,51 @@ def F {k : Type} [LinearOrderedField k] [FloorRing k] [Inhabited k]
     Z (unD t) (ω (unD t))
   else let xys := D n |>.map (λ d => if d ∈ D (n - 1) then (d, 0) else (d, g d))
        linearInterpolation xys t
-  where g (d : k) := let s := if n % 2 = 1 then (1 / 2^(n + 1) / sqrt2) else (1 / 2^(n + 1))
+  where g (d : k) := let m := (n + 1) / 2
+                     let s := if Odd n
+                              then 1 / 2^m
+                              else 1 / 2^m / HasApproxSqrt2.sqrt2
                      s * Z (unD d) (ω n)
+
+def F1 {k : Type} [LinearOrderedField k] [FloorRing k] [Inhabited k] [HasApproxSqrt2 k]
+         (Z : ℕ → k → k) (ω : ℕ → k) (n : ℕ) (t : k) : k -> k :=
+  if n == 0 then
+    λ x => t * Z 0 x
+  else if t ∈ D (n - 1) then
+    0
+  else if t ∈ D n then
+    λ x => Z (unD t) x
+  else let xys := D n |>.map (λ d => if d ∈ D (n - 1) then (d, 0) else (d, g d))
+       linearInterpolation xys
+  where g (d : k) := let m := (n + 1) / 2
+                     let s := if Odd n
+                              then 1 / 2^m
+                              else 1 / 2^m / HasApproxSqrt2.sqrt2
+                     s * Z (unD d) (ω n)
+
+
+open scoped unitInterval
+
+#check volume I
+#check volume ∅
+#check volume (Set.Icc (1/2 : ℝ) (3/4 : ℝ))
+
+noncomputable
+def ν : (Measure ℝ) := volume.restrict I
+
+#check ν I
+#check ν ∅
+#check ν (Set.Icc (1/2 : ℝ) (3/4 : ℝ))
 
 variable {Ω : Type} [MeasureSpace Ω]
 variable {μ : ℝ} {v : ℝ≥0}
 variable {X : Ω → ℝ} (hX : Measure.map X ℙ = gaussianReal μ v)
 #check X
 
-variable {_ : MeasurableSpace Ω} {μ : Measure Ω}
-
-def I : Set ℝ := {x | 0 ≤ x ∧ x ≤ 1}
-variable {_ : MeasurableSpace I} {ν : Measure I}
+def Y : I → ℝ := λ ⟨x, _⟩ => x^2
+-- FIXME: Of course this isn't true but we could define a function via
+-- Box-Müller that we could prove to satisfy this.
+variable (hYY : Measure.map Y ν = gaussianReal 0 1)
 
 theorem BrowianExistence
     {m : ∀ x, MeasurableSpace ℝ}
