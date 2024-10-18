@@ -101,21 +101,40 @@ open scoped unitInterval
 #check volume (Set.Icc (1/2 : ℝ) (3/4 : ℝ))
 
 noncomputable
-def ν : (Measure ℝ) := volume.restrict I
+def ν : (Measure I) := volume
 
-#check ν I
+#check volume.restrict I
+
 #check ν ∅
-#check ν (Set.Icc (1/2 : ℝ) (3/4 : ℝ))
+#check ν (Set.Icc (0 : I) (1 : I))
 
 variable {Ω : Type} [MeasureSpace Ω]
 variable {μ : ℝ} {v : ℝ≥0}
 variable {X : Ω → ℝ} (hX : Measure.map X ℙ = gaussianReal μ v)
 #check X
 
-def Y : I → ℝ := λ ⟨x, _⟩ => x^2
+def Y : I → ℝ := λ x => x^2
 -- FIXME: Of course this isn't true but we could define a function via
 -- Box-Müller that we could prove to satisfy this.
 variable (hYY : Measure.map Y ν = gaussianReal 0 1)
+
+noncomputable
+def F4 [LinearOrderedField I] [FloorRing I]
+       (Z : ℕ → Ω → ℝ) (n : ℕ) : Ω → (I → ℝ) :=
+  if n == 0 then
+    λ ω => λ t => t * Z 0 ω
+  else λ ω => λ t =>
+    if t ∈ D (n - 1) then
+      0
+    else if t ∈ D n then
+      Z (unD t) ω
+    else let xys := D n |>.map (λ d => if d ∈ D (n - 1) then (d, 0) else (d, g ω d))
+         linearInterpolation xys t
+    where g ω (d : ℝ) := let m := (n + 1) / 2
+                         let s := if Odd n
+                                  then 1 / 2^m
+                                  else 1 / 2^m / HasApproxSqrt2.sqrt2
+                         s * Z (unD d) ω
 
 theorem BrowianExistence
     {m : ∀ x, MeasurableSpace ℝ}
