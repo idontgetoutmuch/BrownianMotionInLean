@@ -136,6 +136,26 @@ def F4 [LinearOrderedField I] [FloorRing I]
                                   else 1 / 2^m / HasApproxSqrt2.sqrt2
                          s * Z (unD d) ω
 
+def J := Set.Icc (0 : ℚ) (1 : ℚ)
+
+def F5 [LinearOrderedField J] [FloorRing J]
+       (Z : ℕ → I → ℚ) (n : ℕ) : I → (J → ℚ) :=
+  if n == 0 then
+    λ ω => λ t => t * Z 0 ω
+  else λ ω => λ t =>
+    if t ∈ D (n - 1) then
+      0
+    else if t ∈ D n then
+      Z (unD t) ω
+    else let xys := D n |>.map (λ d => if d ∈ D (n - 1) then (d, 0) else (d, g ω d))
+         linearInterpolation xys t
+    where g ω (d : ℚ) := let m := (n + 1) / 2
+                         let s := if Odd n
+                                  then 1 / 2^m
+                                  else 1 / 2^m / HasApproxSqrt2.sqrt2
+                         s * Z (unD d) ω
+
+
 theorem BrowianExistence
     {m : ∀ x, MeasurableSpace ℝ}
     {f : ∀ i, Ω → ℝ} (hf_Indep : iIndepFun m f μ) (h_Normal : Measure.map (f i) μ = gaussianReal 0 1)
