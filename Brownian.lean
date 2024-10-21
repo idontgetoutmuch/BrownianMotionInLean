@@ -119,15 +119,14 @@ def Y : I → ℝ := λ x => x^2
 variable (hYY : Measure.map Y ν = gaussianReal 0 1)
 
 noncomputable
-def F4 [LinearOrderedField I] [FloorRing I]
-       (Z : ℕ → Ω → ℝ) (n : ℕ) : Ω → (I → ℝ) :=
+def F4 (Z : ℕ → Ω → ℝ) (n : ℕ) : Ω → (I → ℝ) :=
   if n == 0 then
     λ ω => λ t => t * Z 0 ω
   else λ ω => λ t =>
-    if t ∈ D (n - 1) then
+    if t.val ∈ D (n - 1) then
       0
-    else if t ∈ D n then
-      Z (unD t) ω
+    else if t.val ∈ D n then
+      Z (unD t.val) ω
     else let xys := D n |>.map (λ d => if d ∈ D (n - 1) then (d, 0) else (d, g ω d))
          linearInterpolation xys t
     where g ω (d : ℝ) := let m := (n + 1) / 2
@@ -136,25 +135,38 @@ def F4 [LinearOrderedField I] [FloorRing I]
                                   else 1 / 2^m / HasApproxSqrt2.sqrt2
                          s * Z (unD d) ω
 
-def J := Set.Icc (0 : ℚ) (1 : ℚ)
+def J := {x : ℚ // 0 ≤ x ∧ x ≤ 1}
 
-def F5 [LinearOrderedField J] [FloorRing J]
-       (Z : ℕ → I → ℚ) (n : ℕ) : I → (J → ℚ) :=
+def F5 (Z : ℕ → I → ℚ) (n : ℕ) : I → (J → ℚ) :=
   if n == 0 then
-    λ ω => λ t => t * Z 0 ω
+    λ ω => λ t => t.val * Z 0 ω
   else λ ω => λ t =>
-    if t ∈ D (n - 1) then
+    if t.val ∈ D (n - 1) then
       0
-    else if t ∈ D n then
-      Z (unD t) ω
+    else if t.val ∈ D n then
+      Z (unD t.val) ω
     else let xys := D n |>.map (λ d => if d ∈ D (n - 1) then (d, 0) else (d, g ω d))
-         linearInterpolation xys t
+         linearInterpolation xys t.val
     where g ω (d : ℚ) := let m := (n + 1) / 2
                          let s := if Odd n
                                   then 1 / 2^m
                                   else 1 / 2^m / HasApproxSqrt2.sqrt2
                          s * Z (unD d) ω
 
+def F6 (Z : ℕ → I → ℚ) (n : ℕ) : I → (J → ℚ) :=
+  if n == 0 then
+    λ ω => λ t => t.val * Z 0 ω
+  else λ ω => λ t =>
+    if t.val ∈ D (n - 1) then
+      0
+    else 0
+
+#check F6 (λ n => λ ω => 1/2) 0 0 ⟨1/2, by norm_num⟩
+#eval F6 (λ n => λ ω => 1/2) 0 0 ⟨1/2, by norm_num⟩
+#eval F5 (λ n => λ ω => 1/2) 0 0 ⟨1/2, by norm_num⟩
+#check LinearOrderedField ℚ
+#check LinearOrderedField J
+#check FloorRing ℚ
 
 theorem BrowianExistence
     {m : ∀ x, MeasurableSpace ℝ}
@@ -163,19 +175,20 @@ theorem BrowianExistence
     IndepFun (f i) (f j) μ := sorry
 
 -- FIXME: I may have used the wrong spaces (ℝ instead of I or vice versa)
-def Browian
+def Brownian
     {m : ∀ x, MeasurableSpace ℝ}
     -- A supply of normally distributed random variables
     {Z : ∀ i : ℕ, I → ℝ} (hZ_Indep : iIndepFun m Z ν) (h_Normal : Measure.map (Z i) ν = gaussianReal 0 1)
     -- A supply of random values so that we can sample from the random variables
     {ω : ℕ -> I} :
-    I -> ℝ -> ℝ :=
-      -- To a first approximation, BM is the linear interpolation of 0 and a random sample from Z 0
-      let F d t := if d == 1
-                   then t * Z 1 (ω 1)
-                   -- Do the ever better approximations once we know how to pattern match and recurse
-                   else pi
-      sorry
+    I -> ℝ -> ℝ := sorry
+
+      -- -- To a first approximation, BM is the linear interpolation of 0 and a random sample from Z 0
+      -- let F d t := if d == 1
+      --              then t * Z 1 (ω 1)
+      --              -- Do the ever better approximations once we know how to pattern match and recurse
+      --              else pi
+      -- sorry
 
 def HHaskell {α : Type} [LinearOrderedField α] (n : ℕ) (k : ℕ) (_ : 2 * k - 1 ≤ 2^n -1) (s : α) : ℤ :=
   let k':= 2 * k + 1
