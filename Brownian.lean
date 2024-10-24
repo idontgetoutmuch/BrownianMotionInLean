@@ -3,6 +3,9 @@ import «Brownian».Basic
 import Mathlib.Probability.Independence.Basic
 import Mathlib.Probability.Distributions.Gaussian
 import Mathlib.MeasureTheory.Constructions.UnitInterval
+import Batteries.Data.Rat.Basic
+
+#eval Float.toRat0 (1.0 / 2.0)
 
 -- The dyadic points
 def D {α : Type} [LinearOrderedField α] (n : ℕ) : List α :=
@@ -167,6 +170,8 @@ def F6 (Z : ℕ → I → ℚ) (n : ℕ) : I → (J → ℚ) :=
 #check LinearOrderedField ℚ
 #check LinearOrderedField J
 #check FloorRing ℚ
+#eval samples
+#eval List.map Float.toRat0 samples
 
 theorem BrowianExistence
     {m : ∀ x, MeasurableSpace ℝ}
