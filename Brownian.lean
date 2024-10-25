@@ -156,6 +156,11 @@ def F5 (Z : ℕ → I → ℚ) (n : ℕ) : I → (J → ℚ) :=
                                   else 1 / 2^m / HasApproxSqrt2.sqrt2
                          s * Z (unD d) ω
 
+#eval F5 (λ n => λ ω => 1/2) 0 0 ⟨1/2, by norm_num⟩
+#eval Float.toRat0 samples[0]!
+#eval F5 (λ n => λ ω => Float.toRat0 samples[n]!) 0 0 ⟨1/2, by norm_num⟩
+
+
 def F6 (Z : ℕ → I → ℚ) (n : ℕ) : I → (J → ℚ) :=
   if n == 0 then
     λ ω => λ t => t.val * Z 0 ω
