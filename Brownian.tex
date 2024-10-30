@@ -1,0 +1,491 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{subfiles}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{breqn}
+\usepackage{amsfonts}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage{mathtools} % Bonus
+\usepackage[comma,authoryear,round]{natbib}
+
+\begin{document}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+
+
+
+\title{202410-prove-BM}
+\date{October 2024}
+
+
+
+\maketitle
+
+\section{Existence of Brownian Motion}
+
+The basic idea of $L^2$ constructions of Brownian motions is as
+follows. Let $\{\xi_k\}$ be a sequence of iid Gaussian random
+variables. Let $\{\phi_k\}$ be a complete orthonormal basis system in
+$L^2([0,1])$. The idea is to show that the limit
+
+$$
+\lim_{N\to \infty} B^N(t)
+$$
+
+is a Brownian motion, where
+
+$$
+B^N(t) = \sum^N_{k=1} \xi_k \, \langle \mathbb{1}_{[0,t]}, \phi_k \rangle.
+$$
+
+It can be shown that the aximos of the Brownian motions always hold
+**except for the continuity axiom**. In literature, in order to prove
+the continuity axiom, one has to spefically choose the basis
+$\{\phi_k\}$, for example, the Haar and Schauder basis.
+
+In 1905, Einstein published five remarkable papers including, "Über
+die von der molekularkinetischen Theorie der Wärme geforderte Bewegung
+von in ruhenden Flüssigkeiten suspendierten Teilchen." which roughly
+translates as "On the movement of small particles suspended in a
+stationary liquid demanded by the molecular-kinetic theory of heat."
+giving the first explanation of the phenomenon observed by Robert
+Brown in 1827 of small particles of pollen moving at random when
+suspended in water.
+
+The eponymously named Brownian motion is a stochastic process
+$\big(W_t\big)_{0 \le t \le 1}$ (presumably $W$ for Wiener) such that
+
+1. $W_0(\omega) = 0$ for all $\omega$
+
+2. For all $0 \le t_1 \le t \le t_2 \le, \ldots, t_n \le 1$, $W_{t_1}, W_{t_2} - W_{t_3}, \ldots W_{t_{n-1}} - W_{t_n}$ are independent.
+
+3. $W_{t+h} - W_t \sim {\cal{N}}(0,h)$.
+
+4. The map $t \mapsto W_t(\omega)$ is a continuous function of $t$ for
+all $\omega$.
+
+The
+[Kolmogorov-Daniell](http://www.hss.caltech.edu/~kcb/Notes/Kolmogorov.pdf)
+theorem guarantees that a stochastic process satisfying the first two
+conditions exists but does not tell us that the paths are
+continuous.
+
+For example, suppose that we have constructed Brownian motion as
+defined by the above conditions then take a random variable $U \sim {\cal{U}}[0,1]$. Define a new process
+
+$$
+\tilde{W}_t =
+  \begin{cases}
+    W & \text{if } t \neq U, \\
+    0 & \text{if } t = U.
+  \end{cases}
+$$
+
+This has the same finite dimensional distributions as $W_t$ as
+$(W_{t_1}, W_{t_2}, W_{t_3}, \ldots W_{t_{n-1}}, W_{t_n})$ and
+$(\tilde{W}_{t_1}, \tilde{W}_{t_2}, \tilde{W}_{t_3}, \ldots
+\tilde{W}_{t_{n-1}}, \tilde{W}_{t_n})$ are equal unless $U \in \{t_1,
+\ldots, t_n\}$ and this set has measure 0. This process satisifes
+conditions 1--3 but is not continuous
+
+$$
+\lim_{t \uparrow U} \tilde{W}_t = \lim_{t \uparrow U} W_t = W_U
+$$
+
+and
+
+$$
+\mathbb{P}(W_U = 0) = \int_0^1 P(W(u)=0)\,\mathrm du=0
+$$
+
+Further this theorem is not constructive relying on the axiom of
+choice. Most proofs of existence follow [@Ciesielski61]. Instead let
+us follow [@liggett2010continuous].
+
+It is tempting to think of Brownian motion as the limit in some sense
+of a random walk.
+
+$$
+x_t^{(N)} = \sum_{i=1}^\floor{Nt}\frac{\xi_i}{N}
+$$
+
+where $0 \le t \le 1$ However, the processes, $x_t^{(1)}, x_t^{(2)},
+\ldots$ are discontinuous and it is not clear how one would prove that
+the limit of discontinuous processes is in fact continuous.
+
+Let $\{\phi_i\}$ be a complete orthonormal basis for $L^2[0,1]$. That
+is any $f$ for which $\int_0^1 f^2 \mathrm{d}\mu$ exists then
+
+$$
+f = \sum_{i=1}^\infty \langle f, \phi_i\rangle
+$$
+
+where $\mu$ is Lesbegue measure and $\langle\ldots,\ldots\rangle$ is
+the inner product for $L^2$ defined as usual by
+
+$$
+\langle f, g\rangle = \int_0^1 fg\mathrm{d}\mu$
+$$
+
+We know such bases exist, for example, the [Fourier
+expansion](http://en.wikipedia.org/wiki/Fourier_series) and [Legendre
+polynomials](http://en.wikipedia.org/wiki/Legendre_polynomials).
+
+We defined the so-called Haar wavelets for $n = 0, 1, \ldots$ and $k = 1, 3, 5, \ldots, 2^n - 1$.
+
+$$
+H_{n,k}(t) = +2^{(n-1)/2)} (k - 1)2^{-n} < t \le k2^{-n}
+           = -2^{(n-1)/2)} k2^{-n}       < t \le (k + 1)2^{-n}
+$$
+
+haar :: forall n k .
+        (KnownNat n, KnownNat k, (2 * k - 1 <=? 2^n - 1) ~ 'True) =>
+        Haar n (2 * k - 1)
+haar = Haar g where
+  g t | (k' - 1) * 2 ** (-n') < t && t <= k'       * 2 ** (-n') =  2 ** ((n' - 1) / 2)
+      | k'       * 2 ** (-n') < t && t <= (k' + 1) * 2 ** (-n') = -2 ** ((n' - 1) / 2)
+      | otherwise                                               =  0
+    where
+        n' = fromIntegral (natVal (Proxy :: Proxy n))
+        k' = 2 * (fromIntegral (natVal (Proxy :: Proxy k))) - 1
+
+\subsection{Paul Lévy's construction of Brownian motion}
+
+It is a substantial issue whether the conditions imposed on the finite-dimensional distributions in the definition of Brownian motion allow the process to have continuous sample paths, or whether there is a contradiction. In this section we show that there is no contradiction and, fortunately, Brownian motion exists.
+
+\begin{theorem}[Wiener 1923] \label{thm:BMexists}
+Standard Brownian motion exists.
+\end{theorem}
+
+We construct Brownian motion as a uniform limit of continuous functions, to ensure that it automatically has continuous paths. Recall that we need only construct a \emph{standard Brownian motion} $\{ B(t) : t \geq 0 \}$, as $X(t) = x + B(t)$ is a Brownian motion with starting point $x$. The proof exploits properties of Gaussian random vectors, which are the higher-dimensional analogue of the normal distribution.
+
+\begin{definition}
+A random vector $X = (X_1, \dots, X_n)$ is called a \emph{Gaussian random vector} if there exists an $n \times m$ matrix $A$, and an $n$-dimensional vector $b$ such that $X^T = AY + b$, where $Y$ is an $m$-dimensional vector with independent standard normal entries.
+\end{definition}
+
+Basic facts about Gaussian random variables are collected in Appendix 12.2.
+
+\subsubsection*{Proof of Wiener’s theorem.}
+We first construct Brownian motion on the interval $[0, 1]$ as a random element on the space $C[0, 1]$ of continuous functions on $[0, 1]$. The idea is to construct the right joint distribution of Brownian motion step by step on the finite sets of dyadic points. 
+
+[insert Dn=...]
+
+We then interpolate the values on $D_n$ linearly and check that the uniform limit of these continuous functions exists and is a Brownian motion.
+
+To do this, let $\mathcal{D} = \bigcup_{n=0}^\infty D_n$, and let $(\Omega, \mathcal{A}, \mathbb{P})$ be a probability space on which a collection $\{ Z_t : t \in \mathcal{D} \}$ of independent, standard normally distributed random variables can be defined. Let $B(0) := 0$ and $B(1) := Z_1$. For each $n \in \mathbb{N}$ we define the random variables $B(d), d \in D_n$ such that
+\begin{enumerate}
+    \item For all $\tau < s < t \in D_n$, the random variable $B(t) - B(s)$ is normally distributed with mean zero and variance $t - s$, and is independent of $B(s) - B(\tau)$.
+    \item The vectors $\left( B(d) : d \in D_n \right)$ and $\left( Z_t : t \in D \setminus D_n \right)$ are independent.
+\end{enumerate}
+
+Note that we have already done this for $D_0 = \{0, 1\}$. Proceeding inductively, we may assume that we have succeeded in doing it for some $n - 1$. We then define $B(d)$ for $d \in D_n \setminus D_{n-1}$ by
+\[
+    B(d) = \frac{B(d - 2^{-n}) + B(d + 2^{-n})}{2} + \frac{Z_d}{2^{(n+1)/2}}.
+\]
+Note that the first summand is the linear interpolation of the values of $B$ at the neighbouring points of $d$ in $D_{n-1}$. Therefore $B(d)$ is independent of $\left( Z_t : t \in D \setminus D_n \right)$ and the second property is fulfilled.
+
+
+////
+Moreover, as $\frac{1}{2}\left[ B(d + 2^{-n}) - B(d - 2^{-n}) \right]$ depends only on $(Z_t : t \in D_n \setminus D_{n-1})$, it is independent of $Z_d / 2^{(n+1)/2}$. By our induction assumptions both terms are independent, with mean zero and variance $2^{-(n+1)}$. Hence their sum $B(d) = \frac{1}{2} \left( B(d + 2^{-n}) + B(d - 2^{-n}) \right) + \frac{Z_d}{2^{(n+1)/2}}$ is independent and normally distributed with mean zero and variance $2^{-n}$ by Corollary 12.12.
+
+Indeed, all increments $B(d) - B(d - 2^{-n})$, for $d \in D_n \setminus \{ 0 \}$, are independent. To prove this, it suffices to show that they are pairwise independent, as the vector of these increments is Gaussian. We have seen in the previous paragraph that pairs $B(d) - B(d - 2^{-n})$ and $B(d - 2^{-n}) - B(d)$ with $d \in D_n \setminus D_{n-1}$ are independent. This proves that the increments are over intervals separated by some $d \in D_n$. Consider $d$ and $d'$ with this property and minimal $j$, so that the two intervals are contained in $[d - 2^{-j}, d + 2^{-j}]$ and $[d' - 2^{-j}, d' + 2^{-j}]$. By induction the increments over intervals of length $2^{-j}$ are independent, and the increments over the two larger intervals of length $2^{-n}$, formed from the independent increments $B(d) - B(d - 2^{-j})$, respectively $B(d' - 2^{-j}) - B(d')$, are independent using a disjoint set of variables $(Z_t : t \in D_n \setminus D_{n-1})$. Hence they are independent and this implies the first property, and completes the induction step.
+
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=0.5\textwidth]{brownian_steps.png}
+%     \caption{The first three steps in the construction of Brownian motion.}
+% \end{figure}
+
+Having thus chosen the values of the process on all dyadic points, we interpolate between them. Formally, define
+\[
+    F_0(t) = 
+    \begin{cases} 
+        Z_1 & \text{for } t = 1, \\
+        0 & \text{for } t = 0, \\
+        \text{linear in between}, 
+    \end{cases}
+\]
+and, for each $n \geq 1$,
+\[
+    F_n(t) = 
+    \begin{cases} 
+        2^{-(n+1)/2} Z_t & \text{for } t \in D_n \setminus D_{n-1}, \\
+        0 & \text{for } t \in D_{n-1}, \\
+        \text{linear between consecutive points in } D_n.
+    \end{cases}
+\]
+These functions are continuous on $[0, 1]$ and, for all $n$ and $d \in D_n$,
+\[
+    B(d) = \sum_{i=0}^{n} F_i(d) = \sum_{i=0}^{\infty} F_i(d). \tag{1.1}
+\]
+
+
+see Figure 1.2 for an illustration. This can be seen by induction. It holds for $n = 0$. Suppose that it holds for $n - 1$. Let $d \in D_n \setminus D_{n-1}$. Since for $0 \leq i \leq n - 1$ the function $F_i$ is linear on $[d - 2^{-n}, d + 2^{-n}]$, we get
+\[
+    \sum_{i=0}^{n} F_i(d) = \frac{F_{n-1}(d - 2^{-n}) + F_{n-1}(d + 2^{-n})}{2} + \frac{Z_d}{2^{(n+1)/2}}.
+\]
+Since $F_0(d) = Z_1$ and $F_n(d) = 2^{-(n+1)/2} Z_d$, this gives (1.1).
+
+On the other hand, we have, by definition of $Z_d$ and by Lemma 12.9 of the appendix, for $c > 1$ and large $n$,
+\[
+    \mathbb{P}(|Z_d| > c\sqrt{n}) \leq \exp\left( -c^2 n / 2 \right),
+\]
+so that the series
+\[
+    \sum_{n=0}^{\infty} \mathbb{P} \left( \text{there exists } d \in D_n \text{ with } |Z_d| > c \sqrt{n} \right)
+    \leq \sum_{n=0}^{\infty} \sum_{d \in D_n} \mathbb{P}(|Z_d| > c\sqrt{n})
+    \leq \sum_{n=0}^{\infty} (2^n + 1) \exp\left( -c^2 n / 2 \right)
+\]
+converges as soon as $c > \sqrt{2 \log 2}$. Fix such a $c$. By the Borel-Cantelli lemma there exists a random (but almost surely finite) $N$ such that for all $n \geq N$ and $d \in D_n$, we have $|Z_d| < c \sqrt{n - 2}$. Hence, for all $n \geq N$,
+\[
+    \| F_n \|_{\infty} < c \sqrt{n - 2}^{-n}. \tag{1.2}
+\]
+This upper bound implies that, almost surely, the series
+\[
+    B(t) = \sum_{n=0}^{\infty} F_n(t)
+\]
+is uniformly convergent on $[0, 1]$. We denote the continuous limit by $\{ B(t) : t \in [0, 1] \}$.
+
+It remains to check that the increments of this process have the right finite-dimensional distributions. This follows directly from the properties of $B$ on the dense set $D \subset [0, 1]$ and the continuity of the paths. Indeed, suppose that $t_1 < t_2 < \dots < t_n$ are in $[0, 1]$. We find $t_{1,k} < t_{2,k} < \dots < t_{n,k}$ in $D$ with $\lim_{k \to \infty} t_{i,k} = t_i$ and infer from the continuity of $B$ that, for $1 \leq i \leq n - 1$,
+\[
+    B(t_{i+1}) - B(t_i) = \lim_{k \to \infty} (B(t_{i+1,k}) - B(t_{i,k})).
+\]
+As $\lim_{k \to \infty} \mathbb{E} \left[ B(t_{i+1,k}) - B(t_{i,k}) \right] = 0$ and
+\[
+    \lim_{k \to \infty} \text{Cov} \left( B(t_{i+1,k}) - B(t_i,k), B(t_{j+1,k}) - B(t_{j,k}) \right)
+    = \lim_{k \to \infty} 1_{\{i=j\}} (t_{i+1,k} - t_{i,k}),
+\]
+the increments $B(t_{i+1}) - B(t_i)$ are, by Proposition 12.15 of the appendix, independent Gaussian random variables with mean $0$ and variance $t_{i+1} - t_i$, as required.
+
+
+
+\section*{Brownian motion as a random function}
+
+We have thus constructed a continuous process $B : [0, 1] \rightarrow \mathbb{R}$ with the same finite-dimensional distributions as Brownian motion. Take a sequence $B_0, B_1, \ldots$ of independent $C[0,1]$-valued random variables with the distribution of this process, and define $\{B(t) : t \geq 0\}$ by gluing together the parts, more precisely by
+
+\[
+B(t) = B_{\lfloor t \rfloor}(t - \lfloor t \rfloor) + \sum_{i=0}^{\lfloor t \rfloor - 1} B_i(1), \text{ for all } t \geq 0.
+\]
+
+This defines a continuous random function $B : [0, \infty) \rightarrow \mathbb{R}$ and one can see easily from what we have shown so far that it is a standard Brownian motion.
+
+\paragraph{Remark 1.5} If Brownian motion is constructed as a family $\{B(t) : t \geq 0\}$ of random variables on some probability space $\Omega$, it is sometimes useful to know that the mapping $(t, \omega) \mapsto B(t, \omega)$ is measurable on the product space $[0, \infty) \times \Omega$. Exercise 1.2 shows that this can be achieved by Lévy’s construction.
+
+\paragraph{Lemma 1.6} A stochastic process $\{Y(t) : t \geq 0\}$ is called a \textit{Gaussian process}, if for all $t_1 < t_2 < \cdots < t_n$ the vector $(Y(t_1), \ldots, Y(t_n))$ is a Gaussian random vector. It is shown in Exercise 1.3 that Brownian motion with start in $x \in \mathbb{R}$ is a Gaussian process.
+
+\subsection*{1.1.3 Simple invariance properties of Brownian motion}
+
+One of the themes of this book is that many natural sets that can be derived from the sample paths of Brownian motion are in some sense random fractals. An intuitive approach to fractals is that they are sets which have the same random structure at different scales. A key rôle in this behavior is played by the very simple \textit{scaling invariance} property of Brownian motion, which we now formulate. It identifies a transformation on the space of functions, which changes the individual Brownian random functions but leaves their distribution unchanged.
+
+\paragraph{Lemma 1.7 (Scaling invariance)} Suppose $\{B(t) : t \geq 0\}$ is a standard Brownian motion and let $a > 0$. Then the process $\{X(t) : t \geq 0\}$ defined by $X(t) = \frac{1}{a}B(a^2 t)$ is also a standard Brownian motion.
+
+\textit{Proof.} Continuity of the paths, independence and stationarity of the increments remain unchanged under the scaling. It remains to observe that $X(t) - X(s) = \frac{1}{a} (B(a^2 t) - B(a^2 s))$ is normally distributed with expectation 0 and variance $(1/a^2)(a^2 t - a^2 s) = t - s$. \hfill $\blacksquare$
+
+\paragraph{Remark 1.8} Scaling invariance has many useful consequences. As an example, let $a < 0 < b$, and look at $T(a, b) = \inf \{t \geq 0 : B(t) = a \text{ or } B(t) = b\}$, the first exit time of a one-dimensional standard Brownian motion from the interval $[a, b]$. Then, with $X(t) = \frac{1}{a}B(a^2 t)$ we have
+
+\[
+ET(a, b) = a^2 \mathbb{E} \inf \{t \geq 0 : X(t) = 1 \text{ or } X(t) = b/a\} = a^2 ET(1, b/a).
+\]
+
+
+
+
+
+
+
+\title{Brownian motion as a random function}
+\maketitle
+
+In this chapter we focus on one-dimensional, or linear, Brownian motion. We start with Paul Lévy's construction of Brownian motion and discuss two fundamental sample path properties, continuity and differentiability. We then discuss the Cameron–Martin theorem, which shows that sample path properties for Brownian motion with drift can be obtained from the corresponding results for driftless Brownian motion.
+
+\section{Paul Lévy's construction of Brownian motion}
+
+\subsection{Definition of Brownian motion}
+
+Brownian motion is closely linked to the normal distribution. Recall that a random variable $X$ is normally distributed with mean $\mu$ and variance $\sigma^2$ if
+
+\[
+P(X \leq x) = \frac{1}{\sqrt{2\pi\sigma^2}} \int_{-\infty}^{x} e^{-\frac{(u-\mu)^2}{2\sigma^2}} du, \quad \text{for all } x \in \mathbb{R}.
+\]
+
+\paragraph{Definition 1.1} A real-valued stochastic process $\{B(t) : t \geq 0\}$ is called a (\textit{linear}) Brownian motion with start in $x \in \mathbb{R}$ if the following holds:
+\begin{itemize}
+    \item $B(0) = x$,
+    \item the process has independent increments, i.e., for all times $0 \leq t_1 \leq t_2 \leq \dots \leq t_n$, the increments $B(t_n) - B(t_{n-1}), B(t_{n-1}) - B(t_{n-2}), \ldots, B(t_2) - B(t_1)$ are independent random variables,
+    \item for all $t \geq 0$ and $h > 0$, the increments $B(t+h) - B(t)$ are normally distributed with expectation zero and variance $h$,
+    \item almost surely, the function $t \mapsto B(t)$ is continuous.
+\end{itemize}
+
+We say that $\{B(t) : t \geq 0\}$ is a \textit{standard Brownian motion} if $x = 0$. \hfill $\diamond$
+
+We will address the nontrivial question of the \textit{existence} of a Brownian motion in Section 1.1.2. For the moment let us step back and look at some technical points. We have defined Brownian motion as a \textit{stochastic process} $\{B(t) : t \geq 0\}$ which is just a family of (uncountably many) random variables $\omega \mapsto B(t, \omega)$ defined on a single probability space $(\Omega, \mathcal{A}, \mathbb{P})$. At the same time, a stochastic process can also be interpreted as a \textit{random function} with the sample functions defined by $t \mapsto B(t, \omega)$. The \textit{sample path properties} of a stochastic process are the properties of these random functions, and it is these properties we will be most interested in in this book.
+
+
+
+
+\section*{Brownian motion as a random function}
+
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=\textwidth]{sampled_brownian_motions.png}
+%     \caption{Graphs of five sampled Brownian motions}
+% \end{figure}
+
+By the \textit{finite-dimensional distributions} of a stochastic process $\{B(t) : t \geq 0\}$ we mean the laws of all the finite dimensional random vectors
+
+\[
+(B(t_1), B(t_2), \ldots, B(t_n)), \quad \text{for all } 0 \leq t_1 \leq t_2 \leq \ldots \leq t_n.
+\]
+
+To describe these joint laws it suffices to describe the joint law of $B(0)$ and the increments
+
+\[
+(B(t_1) - B(0), B(t_2) - B(t_1), \ldots, B(t_n) - B(t_{n-1})), \quad \text{for all } 0 \leq t_1 \leq t_2 \leq \ldots \leq t_n.
+\]
+
+This is what we have done in the first three items of the definition, which specify the finite-dimensional distributions of Brownian motion. However, the last item, almost sure continuity, is also crucial, and this is information which goes beyond the finite-dimensional distributions of the process in the sense above, technically because the set $\{\omega \in \Omega : t \mapsto B(t, \omega) \text{ continuous}\}$ is in general not in the $\sigma$-algebra generated by the random vectors $(B(t_1), B(t_2), \ldots, B(t_n)), n \in \mathbb{N}$.
+
+\paragraph{Example 1.2} Suppose that $\{B(t) : t \geq 0\}$ is a Brownian motion and $U$ is an independent random variable, which is uniformly distributed on $[0, 1]$. Then the process $\{\tilde{B}(t) : t \geq 0\}$ defined by
+
+\[
+\tilde{B}(t) = 
+\begin{cases} 
+B(t) & \text{if } t \neq U, \\
+0 & \text{if } t = U,
+\end{cases}
+\]
+
+has the same finite-dimensional distributions as a Brownian motion, but is discontinuous if $B(U) \neq 0$, i.e., with probability one, and hence this process is not a Brownian motion. \hfill $\diamond$
+
+We see that, if we are interested in the sample path properties of a stochastic process, we may need to specify more than just its finite-dimensional distributions. Suppose $\mathcal{X}$ is a property a function might or might not have, like continuity, differentiability, etc. We say that a process $\{X(t) : t \geq 0\}$ \textit{has property} $\mathcal{X}$ \textit{almost surely} if there exists $A \subset \Omega$ such that $\mathbb{P}(A) = 1$ and $A \subset \{\omega \in \Omega : t \mapsto X(t, \omega) \text{ has property } \mathcal{X}\}$. Note that the set on the right need not lie in $A$.
+
+
+
+
+\section*{12.2 Gaussian random variables}
+
+\subsection*{12.2.1 Gaussian random variables}
+
+In this section we have collected the facts about Gaussian random vectors, which are used in this book. We start with a useful estimate for standard normal random variables, which is quite precise for large $x$.
+
+\paragraph{Lemma 12.9} Suppose $X$ is standard normally distributed. Then, for all $x > 0$,
+\[
+\frac{1}{x + 1} \frac{1}{\sqrt{2\pi}} e^{-x^2/2} \leq P(X > x) \leq \frac{1}{x} \frac{1}{\sqrt{2\pi}} e^{-x^2/2}.
+\]
+
+\paragraph{Proof.} The right inequality is obtained by the estimate
+\[
+P(X > x) = \frac{1}{\sqrt{2\pi}} \int_x^{\infty} \frac{u}{x} e^{-u^2/2} du \leq \frac{1}{x} \frac{1}{\sqrt{2\pi}} \int_x^{\infty} u e^{-u^2/2} du = \frac{1}{x} \frac{1}{\sqrt{2\pi}} e^{-x^2/2}.
+\]
+
+For the left inequality we define
+\[
+f(x) = x e^{-x^2/2} \int_x^{\infty} \left( u^2 + 1 \right) e^{-u^2/2} du.
+\]
+
+Observe that $f(0) < 0$ and $\lim_{x \to \infty} f(x) = 0$. Moreover,
+\[
+f'(x) = (1 - x^2 + x) e^{-x^2/2} \int_x^{\infty} u^2/2 du - 2x \left(\int_x^{\infty} e^{-u^2/2} du\right).
+\]
+
+which is positive for all $x > 0$, by the first part. Hence $f(x) \leq 0$, proving the lemma. \hfill $\square$
+
+We now look more closely at random vectors with normally distributed components. Our motivation is that they arise, for example, as vectors consisting of the increments of a Brownian motion. Let us clarify some terminology.
+
+\paragraph{Definition 12.10} A random variable $X = (X_1, \ldots, X_d)^\top$ with values in $\mathbb{R}^d$ has the \textit{d-dimensional standard Gaussian distribution} if its $d$ coordinates are standard normally distributed and independent.
+
+More general Gaussian distributions can be derived as linear images of standard Gaussians. Recall, e.g., from Definition 1.5, that a random variable $Y$ with values in $\mathbb{R}^d$ is called Gaussian if there exists an $m$-dimensional standard Gaussian $X$, a $d \times m$ matrix $A$, and a $d$-dimensional vector $b$ such that $Y^\top = AX + b$. The \textit{covariance matrix} of the (column) vector $Y$ is then given by
+\[
+\text{Cov}(Y) = \mathbb{E}[(Y - \mathbb{E}Y)(Y - \mathbb{E}Y)^\top] = AA^\top,
+\]
+where the expectations are defined componentwise.
+
+Our next lemma shows that applying an orthogonal $d \times d$ matrix does not change the distribution of a standard Gaussian random vector, and in particular that the standard Gaussian distribution is rotationally invariant. We write $I_d$ for the $d \times d$ identity matrix.
+
+\paragraph{Lemma 12.11} If $A$ is an orthogonal $d \times d$ matrix, i.e., $AA^\top = I_d$, and $X$ is a $d$-dimensional standard Gaussian vector, then $AX$ is also a $d$-dimensional standard Gaussian vector.
+
+
+
+
+
+\section*{Gaussian random variables}
+
+\paragraph{Proof.} As the coordinates of $X$ are independent, standard normally distributed, $X$ has a density
+\[
+f(x_1, \ldots, x_d) = \prod_{i=1}^{d} \frac{1}{\sqrt{2\pi}} e^{-x_i^2/2} = \frac{1}{(2\pi)^{d/2}} e^{-|x|^2/2},
+\]
+where $| \cdot |$ is the Euclidean norm. The density of $AX$ is (by the transformation rule) $f(A^{-1}x) |\det(A^{-1})|$. The determinant is 1 and, since orthogonal matrices preserve the Euclidean norm, the density of $X$ is invariant under $A$.
+
+\paragraph{Corollary 12.12} Let $X_1$ and $X_2$ be independent and normally distributed with zero expectation and variance $\sigma^2 > 0$. Then $X_1 + X_2$ and $X_1 - X_2$ are independent and normally distributed with expectation 0 and variance $2\sigma^2$.
+
+\paragraph{Proof.} The vector $(X_1/\sqrt{2\sigma}, X_2/\sqrt{2\sigma})^\top$ is standard Gaussian by assumption. Look at
+\[
+A = \begin{pmatrix} \frac{1}{\sqrt{2}} & \frac{1}{\sqrt{2}} \\ \frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{2}} \end{pmatrix}.
+\]
+This is an orthogonal matrix and applying it to our vector yields $\left(\frac{X_1 + X_2}{\sqrt{2\sigma}}, \frac{X_1 - X_2}{\sqrt{2\sigma}}\right)$, which thus must have independent standard normal coordinates.
+
+The next proposition shows that the distribution of a Gaussian random vector is determined by its expectation and covariance matrix.
+
+\paragraph{Proposition 12.13} If $X$ and $Y$ are $d$-dimensional Gaussian vectors with $\mathbb{E}X = \mathbb{E}Y$ and $\text{Cov}(X) = \text{Cov}(Y)$, then $X$ and $Y$ have the same distribution.
+
+\paragraph{Proof.} It is sufficient to consider the case $\mathbb{E}X = \mathbb{E}Y = 0$. By definition, there are standard Gaussian random vectors $X_1$ and $X_2$ and matrices $A$ and $B$ with $X = AX_1$ and $Y = BX_2$. By adding columns of zeros to $A$ or $B$, if necessary, we can assume that $X_1$ and $X_2$ are both $k$-vectors, for some $k$, and $A, B$ are both $d \times k$ matrices. Let $A$ and $B$ be the vector subspaces of $\mathbb{R}^k$ generated by the row vectors of $A$ and $B$, respectively. To simplify notation assume that the first $l \leq d$ row vectors of $A$ form a basis of $A$. Define the linear map $L : A \rightarrow B$ by
+\[
+L(A_i) = B_i \text{ for } i = 1, \ldots, l.
+\]
+Here $A_i$ is the $i$th row vector of $A$, and $B_i$ is the $i$th row vector of $B$. Our aim is to show that $L$ is an orthogonal isomorphism and then use the previous proposition. Let us first show that $L$ is an isomorphism. Our covariance assumption gives that $AA^\top = BB^\top$. Assume there is a vector $v_1 A_1 + \ldots + v_l A_l$ whose image is 0. Then the $d$-vector
+\[
+v = (v_1, \ldots, v_l, 0, \ldots, 0)
+\]
+satisfies $vB = 0$. Hence
+\[
+\|vA\|^2 = vAA^\top v^\top = vBB^\top v^\top = 0.
+\]
+
+
+
+
+\section*{12.3 Martingales in discrete time}
+
+We conclude that $vA = 0$. Hence $L$ is injective and $\dim A \leq \dim B$. Interchanging the role of $A$ and $B$ gives that $L$ is an isomorphism. As the entry $(i, j)$ of $AA^\top = BB^\top$ is the scalar product of $A_i$ and $A_j$, as well as $B_i$ and $B_j$, the mapping $L$ is orthogonal. We can extend it on the orthocomplement of $A$ to an orthogonal map $L: \mathbb{R}^k \rightarrow \mathbb{R}^k$ (or an orthogonal $k \times k$-matrix). Then $X = AX_1$ and $Y = BX_2 = ALTX_2$. As $LT X_2$ is standard Gaussian, by Lemma 12.11, $X$ and $Y$ have the same distribution. \hfill $\blacksquare$
+
+In particular, comparing a $d$-dimensional Gaussian vector with $\text{Cov}(X) = I_d$ with a Gaussian vector with $d$ independent entries and the same expectation, we obtain the following fact.
+
+\paragraph{Corollary 12.14} A Gaussian random vector $X$ has independent entries if and only if its covariance matrix is diagonal. In other words, the entries in a Gaussian vector are uncorrelated if and only if they are independent.
+
+We now show that the Gaussian nature of a random vector is preserved under taking limits.
+
+\paragraph{Proposition 12.15} Suppose $\{X_n : n \in \mathbb{N}\}$ is a sequence of Gaussian random vectors and $X_n \rightarrow X$ almost surely. If $\mathbb{E}X_n \rightarrow \mathbb{E}X$ and $\text{Cov} X_n \rightarrow \text{Cov} X$, then $X$ is Gaussian with mean $b$ and covariance matrix $C$.
+
+\paragraph{Proof.} A variant of the argument in Proposition 12.13 shows that $X_n$ converges in law to a Gaussian random vector with mean $b$ and covariance matrix $C$. As almost sure convergence implies convergence of the associated distributions, this must be the law of $X$. \hfill $\blacksquare$
+
+\paragraph{Lemma 12.16} Suppose $X, Y$ are independent and normally distributed with mean zero and variance $\sigma^2$, then $X^2 + Y^2$ is exponentially distributed with mean $2\sigma^2$.
+
+\paragraph{Proof.} For any bounded, measurable $f: \mathbb{R} \rightarrow \mathbb{R}$ we have, using polar coordinates,
+\[
+\mathbb{E}f(X^2 + Y^2) = \frac{1}{2\pi\sigma^2} \int_{\mathbb{R}^2} f(x^2 + y^2) \exp\left(-\frac{x^2 + y^2}{2\sigma^2}\right) dx \, dy
+\]
+\[
+= \frac{1}{\sigma^2} \int_0^{\infty} f(r^2) \exp\left(-\frac{r^2}{2\sigma^2}\right) r \, dr
+\]
+\[
+= \frac{1}{2\sigma^2} \int_0^{\infty} f(a) \exp\left(-\frac{a}{2\sigma^2}\right) da = \mathbb{E}f(Z),
+\]
+where $Z$ is exponential with mean $2\sigma^2$. \hfill $\blacksquare$
+
+\subsection*{12.3 Martingales in discrete time}
+
+In this section we recall the essentials from the theory of martingales in discrete time. A more thorough introduction to this subject is Williams [Wi91].
+
+\paragraph{Definition 12.17} A \textit{filtration} $(\mathcal{F}_n : n \geq 0)$ is an increasing sequence
+\[
+\mathcal{F}_0 \subset \mathcal{F}_1 \subset \cdots \subset \mathcal{F}_n \subset \cdots
+\]
+of $\sigma$-algebras.
+
+
+
+\end{document}

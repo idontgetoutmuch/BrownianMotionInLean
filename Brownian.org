@@ -1,3 +1,23 @@
+The basic idea of $L^2$ constructions of Brownian motions is as
+follows. Let $\{\xi_k\}$ be a sequence of iid Gaussian random
+variables. Let $\{\phi_k\}$ be a complete orthonormal basis system in
+$L^2([0,1])$. The idea is to show that the limit
+
+$$
+\lim_{N\to \infty} B^N(t)
+$$
+
+is a Brownian motion, where
+
+$$
+B^N(t) = \sum^N_{k=1} \xi_k \, \langle \mathbb{1}_{[0,t]}, \phi_k \rangle.
+$$
+
+It can be shown that the aximos of the Brownian motions always hold
+**except for the continuity axiom**. In literature, in order to prove
+the continuity axiom, one has to spefically choose the basis
+$\{\phi_k\}$, for example, the Haar and Schauder basis.
+
 haar :: forall n k .
         (KnownNat n, KnownNat k, (2 * k - 1 <=? 2^n - 1) ~ 'True) =>
         Haar n (2 * k - 1)
