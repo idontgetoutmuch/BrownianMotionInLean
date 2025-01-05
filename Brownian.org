@@ -28,3 +28,33 @@ haar = Haar g where
     where
         n' = fromIntegral (natVal (Proxy :: Proxy n))
         k' = 2 * (fromIntegral (natVal (Proxy :: Proxy k))) - 1
+
+* Log for [2025-01-03 Fri 11:54]
+
+have h1 : (volume.withDensity (λ a =>  ENNReal.ofReal (gaussianPDFReal μ v a)) (Iic (0 : ℝ)) = ∫⁻ (a : ℝ) in (Iic (0 : ℝ)), ENNReal.ofReal (gaussianPDFReal μ v a) ∂volume := by
+   -- apply MeasureTheory.withDensity_apply sorry sorry
+   sorry
+
+lemma gaussian_cdf_eq_my_gaussian_cdf (μ : ℝ) (v : ℝ≥0) (x : ℝ) :
+  gaussian_cdf μ v x = my_gaussian_cdf μ v x := by
+  rw [my_gaussian_cdf, cdf]
+  have h1 : ν (0 : ℝ) = ν (0 : ℝ) := by
+    sorry -- apply MeasureTheory.withDensity_apply sorry sorry
+  have h2 : ∫⁻ (a : ℝ) in (Iic (0 : ℝ)), ENNReal.ofReal (gaussianPDFReal μ v a) ∂volume =
+            ∫⁻ (a : ℝ) in (Iic (0 : ℝ)), ENNReal.ofReal (gaussianPDFReal μ v a) ∂volume := by
+    sorry
+  have h3 : ν (0 : ℝ) = ∫⁻ (a : ℝ) in (Iic (0 : ℝ)), ENNReal.ofReal (gaussianPDFReal μ v a) ∂volume := by
+    sorry
+    sorry
+
+* Log for [2025-01-04 Sat 15:38]
+
+
+  have h7 : ∫ t in (Iic x), gaussianPDFReal μ v t ∂volume =
+            ∫⁻ (a : ℝ) in (Iic (x : ℝ)), ENNReal.ofReal (gaussianPDFReal μ v a) ∂volume := by
+    sorry
+
+
+   -- have h_lintegral_indicator_pre : ∫⁻ (a : ℝ) in (Iic x), ENNReal.ofReal (gaussianPDFReal μ v a) ∂volume =
+    --                                  ∫⁻ (a : ℝ), (Set.indicator (Iic x) (ENNReal.ofReal ((gaussianPDFReal μ v) a))) ∂volume := by
+    --   rw [<-MeasureTheory.lintegral_indicator _ measurableSet_Iic]

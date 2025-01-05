@@ -11,6 +11,10 @@
 \usepackage{mathtools} % Bonus
 \usepackage[comma,authoryear,round]{natbib}
 
+%% \usepackage{mathtools}
+%% \DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+%% \DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
 \begin{document}
 
 \newtheorem{theorem}{Theorem}
@@ -24,6 +28,92 @@
 
 
 \maketitle
+
+\section{A Possible Proof of 12.15}
+
+%% \documentclass{article}
+%% \usepackage{amsmath, amssymb, amsthm}
+
+%% \begin{document}
+
+\subsection*{Proof: Convergence of a Sequence of Gaussian Random Variables}
+
+Let \( X_n \) be a sequence of random variables given by
+\[
+X_n = \mu_n + \Sigma_n^{1/2} Z,
+\]
+where \( Z \sim \mathcal{N}(0, I_d) \), i.e., \( Z \) is a standard normal random vector in \( \mathbb{R}^d \), and the sequence of means \( \mu_n \) converges to \( b \in \mathbb{R}^d \) and the sequence of covariance matrices \( \Sigma_n \) converges to \( C \in \mathbb{R}^{d \times d} \). We aim to show that \( X_n \) converges in distribution to \( X = b + C^{1/2} Z \), where \( X \) is a Gaussian random vector with mean \( b \) and covariance \( C \).
+
+\subsubsection*{Step 1: Decompose \( X_n - X \)}
+
+We start by decomposing the difference between \( X_n \) and \( X \):
+\[
+X_n - X = (\mu_n - b) + (\Sigma_n^{1/2} - C^{1/2}) Z.
+\]
+Thus, the convergence of \( X_n \) to \( X \) can be understood by analyzing the two terms on the right-hand side.
+
+\subsubsection*{Step 2: Control the Term \( \mu_n - b \)}
+
+Since \( \mu_n \to b \) in \( \mathbb{R}^d \), for any \( \epsilon > 0 \), there exists \( N_1 \) such that for all \( n \geq N_1 \),
+\[
+\| \mu_n - b \| < \epsilon.
+\]
+Thus, this term vanishes as \( n \to \infty \).
+
+\subsubsection*{Step 3: Control the Term \( (\Sigma_n^{1/2} - C^{1/2}) Z \)}
+
+Next, we consider the term \( (\Sigma_n^{1/2} - C^{1/2}) Z \). For any fixed \( Z \), we have
+\[
+\| (\Sigma_n^{1/2} - C^{1/2}) Z \| \leq \| \Sigma_n^{1/2} - C^{1/2} \| \cdot \| Z \|.
+\]
+Since \( \Sigma_n^{1/2} \to C^{1/2} \), for any \( \epsilon > 0 \), there exists \( N_2 \) such that for all \( n \geq N_2 \),
+\[
+\| \Sigma_n^{1/2} - C^{1/2} \| < \epsilon.
+\]
+Thus, we can control the norm \( \| (\Sigma_n^{1/2} - C^{1/2}) Z \| \) by the bound \( \epsilon \| Z \| \).
+
+\subsubsection*{Step 4: Control the Norm \( \|Z\| \)}
+
+Since \( Z \sim \mathcal{N}(0, I_d) \), the norm \( \|Z\| \) follows a chi-squared distribution with \( d \) degrees of freedom, i.e., \( \|Z\|^2 \sim \chi^2(d) \). Therefore, \( \|Z\| \) has finite mean and variance. By applying concentration inequalities, such as Markov's inequality, we can bound \( \|Z\| \) with high probability. Specifically, for any \( \epsilon > 0 \), there exists \( M > 0 \) such that
+\[
+\mathbb{P}(\|Z\| > M) < \epsilon.
+\]
+Thus, with high probability, \( \|Z\| \) is bounded by \( M \).
+
+\subsubsection*{Step 5: Combine Everything}
+
+Now, consider the decomposition:
+\[
+X_n - X = (\mu_n - b) + (\Sigma_n^{1/2} - C^{1/2}) Z.
+\]
+- For the first term, we have \( \| \mu_n - b \| < \epsilon \) for \( n \geq N_1 \).
+- For the second term, we have \( \| \Sigma_n^{1/2} - C^{1/2} \| < \epsilon \) for \( n \geq N_2 \).
+- By Markov's inequality, we can bound \( \|Z\| \) with high probability.
+
+Now, we split the analysis into a high-probability event \( \{ \|Z\| \leq M \} \) and a low-probability event \( \{ \|Z\| > M \} \):
+- On the high-probability event \( \{ \|Z\| \leq M \} \), we have
+\[
+\| (\Sigma_n^{1/2} - C^{1/2}) Z \| \leq \| \Sigma_n^{1/2} - C^{1/2} \| \cdot M < \epsilon \cdot M.
+\]
+Thus, for large \( n \), the term \( \| (\Sigma_n^{1/2} - C^{1/2}) Z \| \) becomes arbitrarily small.
+- On the low-probability event \( \{ \|Z\| > M \} \), we know that \( \mathbb{P}(\|Z\| > M) \) can be made arbitrarily small by choosing a large \( M \).
+
+\subsubsection*{Step 6: Conclude Convergence in Distribution}
+
+For any bounded continuous test function \( f: \mathbb{R}^d \to \mathbb{R} \), consider the difference in expectations:
+\[
+\mathbb{E}[f(X_n)] - \mathbb{E}[f(X)] = \mathbb{E}[f(X_n) \mathbf{1}_{\|Z\| \leq M}] - \mathbb{E}[f(X) \mathbf{1}_{\|Z\| \leq M}] + \mathbb{E}[f(X_n) \mathbf{1}_{\|Z\| > M}] - \mathbb{E}[f(X) \mathbf{1}_{\|Z\| > M}].
+\]
+- On the high-probability set \( \{ \|Z\| \leq M \} \), we have \( \| X_n - X \| \to 0 \), and by continuity of \( f \), the first two terms converge to zero as \( n \to \infty \).
+- The second two terms are controlled by the bound \( \mathbb{P}(\|Z\| > M) \), which can be made arbitrarily small by choosing \( M \) large.
+
+As \( M \to \infty \) and then \( n \to \infty \), we have
+\[
+\mathbb{E}[f(X_n)] \to \mathbb{E}[f(X)].
+\]
+Thus, \( X_n \) converges in distribution to \( X \).
+
+%% \end{document}
 
 \section{Some Background}
 
@@ -93,9 +183,9 @@ us follow [@liggett2010continuous].
 It is tempting to think of Brownian motion as the limit in some sense
 of a random walk.
 
-$$
-x_t^{(N)} = \sum_{i=1}^\floor{Nt}\frac{\xi_i}{N}
-$$
+%% $$
+%% x_t^{(N)} = \sum_{i=1}^\floor{Nt}\frac{\xi_i}{N}
+%% $$
 
 where $0 \le t \le 1$ However, the processes, $x_t^{(1)}, x_t^{(2)},
 \ldots$ are discontinuous and it is not clear how one would prove that
